@@ -20,6 +20,7 @@ export interface Project {
   status: ProjectStatus;
   liveUrl?: string;
   githubUrl?: string;
+  image?: string;
   /** Shown in the spotlight deck at the top of Projects */
   featured?: boolean;
   /** Short badge shown on the card, e.g. "#1 School Tool" */
