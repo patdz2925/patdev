@@ -38,20 +38,20 @@ export const projectCategories: ("All" | ProjectCategory)[] = [
 
 export const projects: Project[] = [
   {
-    id: "pitechs",
-    title: "Project PiTechs",
-    description: "School technology project combining programming and creative media.",
-    longDescription:
-      "One of our school technology projects under the ATecHS Society. Built with a GenAI-assisted workflow — from planning and UI design to the working build. Full write-up to follow.",
-    category: "Other",
-    technologies: ["GenAI", "Web", "UI Design"],
-    date: "2025 – 2026",
-    status: "In progress",
-    featured: true,
-    badge: "School tech",
-    highlights: ["GenAI-assisted build", "UI design + programming", "Built with the ATecHS Society"],
-    image: "/projects/pitechs.gif",
-  },
+  id: "pitechs",
+  title: "Project PiTechs",
+  description: "School technology project combining programming and creative media.",
+  longDescription:
+    "One of our school technology projects under the ATecHS Society. Built with a GenAI-assisted workflow — from planning and UI design to the working build. Full write-up to follow.",
+  category: "Other",
+  technologies: ["GenAI", "Web", "UI Design"],
+  date: "2025 – 2026",
+  status: "In progress",
+  featured: true,
+  badge: "School tech",
+  highlights: ["GenAI-assisted build", "UI design + programming", "Built with the ATecHS Society"],
+  image: "/projects/pitechs.gif",
+},
   {
     id: "media-bank",
     title: "Media Bank",
