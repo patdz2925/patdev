@@ -126,6 +126,14 @@ export function Sidebar({ active, onOpenChat }: { active: string; onOpenChat: ()
                 </a>
               );
             })}
+            <button
+              type="button"
+              onClick={onOpenChat}
+              aria-haspopup="dialog"
+              className="inline-flex cursor-pointer items-center gap-1 hover:text-neutral-900 dark:hover:text-neutral-100"
+            >
+              <span aria-hidden="true">community chat ↗</span>
+            </button>
           </div>
         </div>
       </div>
