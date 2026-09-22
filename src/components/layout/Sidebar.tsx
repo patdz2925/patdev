@@ -1,16 +1,10 @@
 import { Mail, MessageCircle } from "lucide-react";
 import { primaryNav, secondaryNav } from "../../data/navigation";
 import { profile } from "../../data/profile";
+import { avatarFor } from "../../data/avatars";
 import { featuredSocials, iconMap } from "../../data/socials";
 import { ThemeSwitch } from "./ThemeSwitch";
 import { useViewers } from "../../hooks/useViewers";
-
-/** Deterministic gray shade per anonymous visitor key for the avatar stack. */
-function visitorShade(id: string): number {
-  let h = 0;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) % 100;
-  return 30 + (h % 45);
-}
 
 /**
  * Fixed left sidebar on lg+ screens.
@@ -100,10 +94,12 @@ export function Sidebar({ active, onOpenChat }: { active: string; onOpenChat: ()
             <>
               <div className="flex items-center" aria-hidden="true">
                 {viewers.slice(0, 4).map((id, i) => (
-                  <span
+                  <img
                     key={id}
-                    style={{ backgroundColor: `hsl(0 0% ${visitorShade(id)}%)` }}
-                    className={`h-5 w-5 rounded-full border-2 border-white dark:border-neutral-950 ${i > 0 ? "-ml-1.5" : ""}`}
+                    src={avatarFor(id)}
+                    alt=""
+                    draggable={false}
+                    className={`h-5 w-5 rounded-full border-2 border-white bg-white object-cover dark:border-neutral-950 ${i > 0 ? "-ml-1.5" : ""}`}
                   />
                 ))}
               </div>
