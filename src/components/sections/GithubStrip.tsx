@@ -59,7 +59,7 @@ export function GithubStrip() {
             })}
           </svg>
           <span className="mt-2 block font-mono text-[11px] text-neutral-400">
-            Stylized illustration — see live contributions on GitHub ↗
+            GitHub profile ↗
           </span>
         </a>
       </Reveal>
