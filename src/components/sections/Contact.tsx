@@ -33,6 +33,9 @@ export function Contact() {
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [copied, setCopied] = useState(false);
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
+    "idle"
+  );
 
   const copyEmail = async () => {
     try {
@@ -67,13 +70,39 @@ export function Contact() {
     URL.revokeObjectURL(url);
   };
 
-  const sendViaEmail = (e: React.FormEvent) => {
+  /** Send the message straight to the inbox via FormSubmit (no mail app needed). */
+  const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    const subject = encodeURIComponent(
-      name ? `Portfolio inquiry from ${name}` : "Portfolio inquiry"
-    );
-    const body = encodeURIComponent(message);
-    window.location.href = `mailto:${profile.email}?subject=${subject}&body=${body}`;
+    const text = message.trim();
+    const from = name.trim();
+    if (!text || status === "sending") return;
+    setStatus("sending");
+    const ctrl = new AbortController();
+    const timeout = setTimeout(() => ctrl.abort(), 15000);
+    try {
+      const res = await fetch(
+        `https://formsubmit.co/ajax/${profile.email}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            name: from || "Portfolio visitor",
+            message: text,
+            _subject: `Portfolio inquiry${from ? ` from ${from}` : ""}`,
+            _template: "table",
+            _captcha: "false",
+          }),
+          signal: ctrl.signal,
+        }
+      );
+      if (!res.ok) throw new Error(`send failed: ${res.status}`);
+      setStatus("sent");
+      setMessage("");
+    } catch {
+      setStatus("error");
+    } finally {
+      clearTimeout(timeout);
+    }
   };
 
   return (
@@ -150,7 +179,7 @@ export function Contact() {
           </div>
 
           <form
-            onSubmit={sendViaEmail}
+            onSubmit={sendMessage}
             className="rounded-2xl border border-neutral-200 bg-gradient-to-b from-neutral-50 to-white p-5 dark:border-neutral-800 dark:from-neutral-900 dark:to-neutral-950"
           >
             <label htmlFor="contact-name" className="font-mono text-[11px] uppercase tracking-wider text-neutral-400">
@@ -160,9 +189,13 @@ export function Contact() {
               id="contact-name"
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (status !== "idle") setStatus("idle");
+              }}
               placeholder="Jane from the hackathon"
               autoComplete="name"
+              maxLength={60}
               className="mt-2 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
             />
             <label htmlFor="contact-msg" className="mt-4 block font-mono text-[11px] uppercase tracking-wider text-neutral-400">
@@ -171,19 +204,51 @@ export function Contact() {
             <textarea
               id="contact-msg"
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={(e) => {
+                setMessage(e.target.value);
+                if (status !== "idle") setStatus("idle");
+              }}
               placeholder="Hi! I saw your study-buddy project and…"
               rows={5}
               required
+              maxLength={2000}
               className="mt-2 w-full resize-y rounded-lg border border-neutral-200 bg-white px-3 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
             />
             <button
               type="submit"
-              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-neutral-900 bg-transparent px-4 py-2.5 text-sm font-medium text-neutral-900 hover:bg-neutral-900 hover:text-white dark:border-neutral-100 dark:text-neutral-100 dark:hover:bg-neutral-100 dark:hover:text-neutral-900"
+              disabled={status === "sending" || !message.trim()}
+              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-neutral-900 bg-transparent px-4 py-2.5 text-sm font-medium text-neutral-900 hover:bg-neutral-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-100 dark:text-neutral-100 dark:hover:bg-neutral-100 dark:hover:text-neutral-900"
             >
-              <Send className="h-4 w-4" aria-hidden="true" />
-              Compose email
+              {status === "sending" ? (
+                <>
+                  <span
+                    aria-hidden="true"
+                    className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent opacity-60"
+                  />
+                  Sending…
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4" aria-hidden="true" />
+                  Send message
+                </>
+              )}
             </button>
+            {status === "sent" ? (
+              <p role="status" className="mt-2.5 flex items-center gap-1.5 font-mono text-[12px] text-emerald-600 dark:text-emerald-400">
+                <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                Sent — I&apos;ll get back to you soon.
+              </p>
+            ) : null}
+            {status === "error" ? (
+              <p role="alert" className="mt-2.5 font-mono text-[12px] text-red-500">
+                Couldn&apos;t send just now. Try again, or email me directly at{" "}
+                <a href={`mailto:${profile.email}`} className="underline">
+                  {profile.email}
+                </a>
+                .
+              </p>
+            ) : null}
           </form>
         </div>
       </Reveal>
