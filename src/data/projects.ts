@@ -50,6 +50,7 @@ export const projects: Project[] = [
     featured: true,
     badge: "School tech",
     highlights: ["GenAI-assisted build", "UI design + programming", "Built with the ATecHS Society"],
+    image: "public/projects/pitechs.gif",
   },
   {
     id: "media-bank",
