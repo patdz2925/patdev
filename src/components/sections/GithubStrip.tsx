@@ -34,7 +34,7 @@ export function GithubStrip() {
           target="_blank"
           rel="noopener noreferrer"
           className="group block"
-          aria-label="Open GitHub profile (stylized activity illustration)"
+          aria-label="GitHub profile"
         >
           <svg
             viewBox="0 0 689 91"
