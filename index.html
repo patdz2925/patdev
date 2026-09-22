@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      EDIT ME: basic SEO lives here.
+      Replace the name / description / URL with your own when you deploy.
+      All visible portfolio content lives in src/data/*.ts
+    -->
+    <title>Your Name — Student Developer &amp; Creative</title>
+    <meta
+      name="description"
+      content="Personal portfolio of Your Name — aspiring CS/IT student building web projects, GenAI experiments, and creative edits."
+    />
+    <meta name="author" content="Your Name" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0c0c0e" media="(prefers-color-scheme: dark)" />
+    <link rel="canonical" href="https://yourname.dev/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Your Name" />
+    <meta property="og:title" content="Your Name — Student Developer & Creative" />
+    <meta
+      property="og:description"
+      content="Aspiring CS/IT student building web projects, GenAI experiments, and creative edits."
+    />
+    <meta property="og:url" content="https://yourname.dev/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Your Name — Student Developer & Creative" />
+    <meta
+      name="twitter:description"
+      content="Aspiring CS/IT student building web projects, GenAI experiments, and creative edits."
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Silkscreen:wght@400;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      // Avoid theme flash: default to stored pref, else system.
+      (function () {
+        try {
+          var KEY = 'portfolio-theme';
+          var v = localStorage.getItem(KEY) || 'system';
+          var mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+          var dark = v === 'dark' || (v === 'system' && mq && mq.matches);
+          document.documentElement.classList.toggle('dark', dark);
+          document.documentElement.dataset.themePref = v;
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
