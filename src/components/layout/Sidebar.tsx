@@ -5,8 +5,8 @@ import { featuredSocials, iconMap } from "../../data/socials";
 import { ThemeSwitch } from "./ThemeSwitch";
 
 /**
- * Fixed left sidebar on lg+ screens (reference pattern).
- * Groups: primary anchors with icons, secondary anchors plain, contact footer.
+ * Fixed left sidebar on lg+ screens.
+ * Groups: primary anchors (with icons), section labels, secondary anchors, contact footer.
  */
 export function Sidebar({ active }: { active: string }) {
   return (
@@ -21,8 +21,12 @@ export function Sidebar({ active }: { active: string }) {
         {profile.name}
       </a>
 
-      <div className="mt-9 flex flex-1 flex-col gap-4 overflow-y-auto font-mono text-[13px]">
+      <div className="mt-5 flex flex-1 flex-col gap-5 overflow-visible font-mono text-[13px]">
+        {/* Primary navigation */}
         <div className="flex flex-col gap-2.5">
+          <p className="mb-1.5 font-mono text-[13px] uppercase tracking-wider text-neutral-400">
+            Navigation
+          </p>
           {primaryNav.map((item) => {
             const Icon = item.icon;
             const isActive = active === item.id;
@@ -50,9 +54,13 @@ export function Sidebar({ active }: { active: string }) {
           })}
         </div>
 
-        <div className="h-px bg-neutral-200 dark:bg-neutral-800" />
+        <div className="my-4 h-px bg-neutral-200 dark:bg-neutral-800" />
 
+        {/* Secondary navigation */}
         <div className="flex flex-col gap-2.5">
+          <p className="mb-1.5 font-mono text-[13px] uppercase tracking-wider text-neutral-400">
+            Other
+          </p>
           {secondaryNav.map((item) => {
             const isActive = active === item.id;
             return (
@@ -66,6 +74,8 @@ export function Sidebar({ active }: { active: string }) {
                     : "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
                 }`}
               >
+                {/* invisible spacer keeps secondary text aligned with primary icon column */}
+                <span className="shrink-0 w-[1.15em]" aria-hidden="true" />
                 {item.label}
               </a>
             );
@@ -73,42 +83,45 @@ export function Sidebar({ active }: { active: string }) {
         </div>
       </div>
 
-      <div className="mt-6 flex items-center gap-2">
-        <ThemeSwitch />
-        <span className="font-mono text-[10px] text-neutral-400">
-          <span className="pulse-dot mr-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 align-middle" />
-          {profile.availability.split(",")[0]}
-        </span>
-      </div>
+      {/* Bottom utility area — pushed to the bottom of the sidebar */}
+      <div className="mt-auto flex flex-col">
+        <div className="mt-5 flex items-center gap-2">
+          <ThemeSwitch />
+          <span className="font-mono text-[12px] text-neutral-400">
+            <span className="pulse-dot mr-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 align-middle" />
+            {profile.availability.split(",")[0]}
+          </span>
+        </div>
 
-      <div className="mt-4 border-t border-neutral-200 pt-4 dark:border-neutral-800">
-        <p className="text-[12px] leading-relaxed text-neutral-400">
-          For work, collabs &amp; everything else, reach me at
-        </p>
-        <a
-          href={`mailto:${profile.email}`}
-          className="mt-1.5 inline-flex w-fit items-center gap-2 font-mono text-[13px] text-neutral-900 hover:text-neutral-500 dark:text-neutral-100 dark:hover:text-neutral-400"
-        >
-          <Mail className="h-[1.15em] w-[1.15em] shrink-0" aria-hidden="true" />
-          <span className="break-all">{profile.email}</span>
-        </a>
-        <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 font-mono text-[11px] text-neutral-400">
-          {featuredSocials.map((s) => {
-            const Icon = iconMap[s.icon];
-            return (
-              <a
-                key={s.label}
-                href={s.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 hover:text-neutral-900 dark:hover:text-neutral-100"
-              >
-                <Icon className="h-3 w-3" aria-hidden="true" />
-                <span className="sr-only">{s.label}</span>
-                <span aria-hidden="true">{s.label.toLowerCase()} ↗</span>
-              </a>
-            );
-          })}
+        <div className="mt-4 border-t border-neutral-200 pt-4 dark:border-neutral-800">
+          <p className="text-[12px] leading-relaxed text-neutral-400">
+            For work, collabs &amp; everything else, reach me at
+          </p>
+          <a
+            href={`mailto:${profile.email}`}
+            className="mt-1.5 inline-flex w-fit items-center gap-2 font-mono text-[13px] text-neutral-900 hover:text-neutral-500 dark:text-neutral-100 dark:hover:text-neutral-400"
+          >
+            <Mail className="h-[1.15em] w-[1.15em] shrink-0" aria-hidden="true" />
+            <span className="break-all">{profile.email}</span>
+          </a>
+          <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 font-mono text-[11px] text-neutral-400">
+            {featuredSocials.map((s) => {
+              const Icon = iconMap[s.icon];
+              return (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 hover:text-neutral-900 dark:hover:text-neutral-100"
+                >
+                  <Icon className="h-3 w-3" aria-hidden="true" />
+                  <span className="sr-only">{s.label}</span>
+                  <span aria-hidden="true">{s.label.toLowerCase()} ↗</span>
+                </a>
+              );
+            })}
+          </div>
         </div>
       </div>
     </nav>

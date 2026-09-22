@@ -1,30 +1,10 @@
 import { MapPin } from "lucide-react";
 import { profile } from "../../data/profile";
 import { featuredSocials } from "../../data/socials";
+import { InteractivePortrait } from "../layout/InteractivePortrait";
 
-/** Initials fallback when no photo is set */
-function InitialsAvatar({ name }: { name: string }) {
-  const initials = name
-    .split(" ")
-    .map((p) => p[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-  return (
-    <div
-      aria-hidden="true"
-      className="flex aspect-[4/5] w-full items-center justify-center rounded-2xl border border-neutral-200 bg-gradient-to-b from-neutral-50 to-white dark:border-neutral-800 dark:from-neutral-900 dark:to-neutral-950"
-    >
-      <div className="text-center">
-        <div className="font-pixel text-5xl text-neutral-900 dark:text-neutral-100">{initials}</div>
-        <div className="halftone halftone-wide mask-fade-x mt-4 h-6 w-32 opacity-20" />
-        <p className="mt-3 font-mono text-[10px] uppercase tracking-widest text-neutral-400">
-          add photo at /profile.jpg
-        </p>
-      </div>
-    </div>
-  );
-}
+
+
 
 export function Hero() {
   return (
@@ -32,22 +12,7 @@ export function Hero() {
       <div className="grid gap-9 sm:grid-cols-[16rem_1fr] sm:items-start sm:gap-10">
         <div className="reveal d1 mx-auto w-full max-w-[16rem] sm:mx-0">
           <div className="relative">
-            <img
-              src={profile.avatarSrc}
-              alt={profile.avatarAlt}
-              width={288}
-              height={360}
-              loading="eager"
-              onError={(e) => {
-                // Graceful fallback: hide broken img, show initials instead
-                (e.target as HTMLImageElement).style.display = "none";
-                document.getElementById("avatar-fallback")?.classList.remove("hidden");
-              }}
-              className="aspect-[4/5] w-full rounded-2xl border border-neutral-200 object-cover dark:border-neutral-800"
-            />
-            <div id="avatar-fallback" className="hidden">
-              <InitialsAvatar name={profile.name} />
-            </div>
+            <InteractivePortrait />
             <div
               aria-hidden="true"
               className="halftone-fine mask-bl pointer-events-none absolute -bottom-8 -left-6 h-24 w-32 opacity-25"
