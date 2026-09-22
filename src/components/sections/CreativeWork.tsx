@@ -46,9 +46,6 @@ export function CreativeWork() {
             </div>
           ))}
         </div>
-        <p className="mt-4 font-mono text-[11px] leading-relaxed text-neutral-400">
-          Paste YouTube / Drive links into <code className="rounded bg-neutral-100 px-1 dark:bg-neutral-800">src/data/achievements.ts → creativeWork</code> to make cards link out.
-        </p>
       </Reveal>
     </section>
   );
