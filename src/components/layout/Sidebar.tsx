@@ -97,6 +97,14 @@ export function Sidebar({ active, onOpenChat }: { active: string; onOpenChat: ()
             {profile.availability.split(",")[0]}
           </button>
         </div>
+        <button
+          type="button"
+          onClick={onOpenChat}
+          aria-haspopup="dialog"
+          className="mt-2 w-fit cursor-pointer text-left font-mono text-[12px] text-neutral-400 transition-colors hover:text-neutral-900 dark:hover:text-neutral-100"
+        >
+          <span aria-hidden="true">community chat ↗</span>
+        </button>
 
         <div className="mt-4 border-t border-neutral-200 pt-4 dark:border-neutral-800">
           <p className="text-[12px] leading-relaxed text-neutral-400">
@@ -126,14 +134,6 @@ export function Sidebar({ active, onOpenChat }: { active: string; onOpenChat: ()
                 </a>
               );
             })}
-            <button
-              type="button"
-              onClick={onOpenChat}
-              aria-haspopup="dialog"
-              className="inline-flex cursor-pointer items-center gap-1 hover:text-neutral-900 dark:hover:text-neutral-100"
-            >
-              <span aria-hidden="true">community chat ↗</span>
-            </button>
           </div>
         </div>
       </div>
