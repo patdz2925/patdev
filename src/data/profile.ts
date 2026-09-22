@@ -32,9 +32,9 @@ export const profile = {
     "I also edit short films and run media coverage: photography, reels, and photobooth operations for school events.",
   ],
 
-  // Profile photo: send it anytime — save it as public/profile.jpg and it appears automatically.
+  // Profile photo: transparent B&W halftone cutout at public/profile.png.
   // Falls back to initials avatar if the file is missing.
-  avatarSrc: "/profile.jpg",
+  avatarSrc: "/profile.png",
   avatarAlt: "Portrait of Patrick Dela Cruz",
 
   email: "contact@patrickdev.top",
