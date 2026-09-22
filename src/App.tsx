@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Sidebar } from "./components/layout/Sidebar";
 import { MobileHeader, MobileMenu } from "./components/layout/MobileNav";
+import { useActiveSection } from "./hooks/useActiveSection";
+import { sectionIds } from "./data/navigation";
 import { Footer } from "./components/layout/Footer";
 import { Hero } from "./components/sections/Hero";
 import { Stats } from "./components/sections/Stats";
@@ -14,8 +16,13 @@ import { Organizations } from "./components/sections/Organizations";
 import { Achievements } from "./components/sections/Achievements";
 import { GithubStrip } from "./components/sections/GithubStrip";
 import { Contact } from "./components/sections/Contact";
-import { useActiveSection } from "./hooks/useActiveSection";
-import { sectionIds } from "./data/navigation";
+
+// Lazy: keeps supabase-js out of the initial bundle until chat opens.
+const CommunityChat = lazy(() =>
+  import("./components/chat/CommunityChat").then((m) => ({
+    default: m.CommunityChat,
+  }))
+);
 
 /**
  * Single-page portfolio. Section order mirrors the sidebar.
@@ -25,6 +32,7 @@ import { sectionIds } from "./data/navigation";
 export default function App() {
   const active = useActiveSection(sectionIds);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-white font-sans text-neutral-900 antialiased dark:bg-neutral-950 dark:text-neutral-100">
@@ -41,9 +49,16 @@ export default function App() {
         Skip to content
       </a>
 
-      <Sidebar active={active} />
+      <Sidebar active={active} onOpenChat={() => setChatOpen(true)} />
       <MobileHeader onOpen={() => setMenuOpen(true)} />
-      <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <MobileMenu
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        onOpenChat={() => setChatOpen(true)}
+      />
+      <Suspense fallback={null}>
+        <CommunityChat open={chatOpen} onClose={() => setChatOpen(false)} />
+      </Suspense>
 
       <main id="main" className="relative z-10 lg:pl-60">
         <div className="mx-auto max-w-2xl px-6">

@@ -24,7 +24,7 @@ export function MobileHeader({ onOpen }: { onOpen: () => void }) {
   );
 }
 
-export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function MobileMenu({ open, onClose, onOpenChat }: { open: boolean; onClose: () => void; onOpenChat?: () => void }) {
   const [visible, setVisible] = useState(open);
 
   useEffect(() => {
@@ -123,6 +123,18 @@ export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => vo
               {profile.email}
             </a>
           </div>
+          {onOpenChat ? (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onOpenChat();
+              }}
+              className="inline-flex w-fit items-center gap-2 font-mono text-[14px] text-neutral-700 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-neutral-100"
+            >
+              community chat ↗
+            </button>
+          ) : null}
         </div>
       </div>
     </div>

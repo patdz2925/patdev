@@ -48,7 +48,7 @@ export type { LucideIcon };
 
 export const socials: Social[] = [
   { label: "Instagram", href: "https://www.instagram.com/patrickviraydc", icon: "instagram", featured: true },
-  { label: "Email", href: "mailto:contact@patrickdev.top", icon: "email", featured: true },
+  { label: "Email", href: "mailto:contact@patrickz.top", icon: "email", featured: true },
   { label: "GitHub", href: "", icon: "github" },
   { label: "LinkedIn", href: "", icon: "linkedin" },
   { label: "X", href: "", icon: "x" },

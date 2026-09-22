@@ -37,7 +37,7 @@ export const profile = {
   avatarSrc: "/profile.png",
   avatarAlt: "Portrait of Patrick Dela Cruz",
 
-  email: "contact@patrickdev.top",
+  email: "contact@patrickz.top",
 
   // Resume: the site generates a printable resume from this data (see Contact section).
   // Optionally link a PDF: put it at public/resume.pdf and set resumeUrl to "/resume.pdf".
