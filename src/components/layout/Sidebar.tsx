@@ -5,11 +5,11 @@ import { featuredSocials, iconMap } from "../../data/socials";
 import { ThemeSwitch } from "./ThemeSwitch";
 import { useViewers } from "../../hooks/useViewers";
 
-/** Deterministic hue per anonymous visitor key for the avatar stack. */
-function visitorHue(id: string): number {
+/** Deterministic gray shade per anonymous visitor key for the avatar stack. */
+function visitorShade(id: string): number {
   let h = 0;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) % 360;
-  return h;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) % 100;
+  return 30 + (h % 45);
 }
 
 /**
@@ -102,7 +102,7 @@ export function Sidebar({ active, onOpenChat }: { active: string; onOpenChat: ()
                 {viewers.slice(0, 4).map((id, i) => (
                   <span
                     key={id}
-                    style={{ backgroundColor: `hsl(${visitorHue(id)} 60% 45%)` }}
+                    style={{ backgroundColor: `hsl(0 0% ${visitorShade(id)}%)` }}
                     className={`h-5 w-5 rounded-full border-2 border-white dark:border-neutral-950 ${i > 0 ? "-ml-1.5" : ""}`}
                   />
                 ))}
@@ -128,18 +128,7 @@ export function Sidebar({ active, onOpenChat }: { active: string; onOpenChat: ()
 
         <div className="my-4 h-px bg-neutral-200 dark:bg-neutral-800" />
 
-        <div className="flex items-center gap-2">
-          <ThemeSwitch />
-          <button
-            type="button"
-            onClick={onOpenChat}
-            aria-haspopup="dialog"
-            className="cursor-pointer text-left font-mono text-[12px] text-neutral-400 transition-colors hover:text-neutral-900 dark:hover:text-neutral-100"
-          >
-            <span className="pulse-dot mr-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 align-middle" />
-            {profile.availability.split(",")[0]}
-          </button>
-        </div>
+        <ThemeSwitch />
 
         <div className="mt-4 border-t border-neutral-200 pt-4 dark:border-neutral-800">
           <p className="text-[12px] leading-relaxed text-neutral-400">
