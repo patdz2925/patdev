@@ -128,10 +128,14 @@ export function InteractivePortrait() {
       // Composite parallax layers at their correct vertical positions.
       const layers = layersRef.current;
       for (let i = 0; i < LAYERS.length; i++) {
+        const layer = layers[i];
+        if (!layer) continue;
+
         const [y0, _y1, depth] = LAYERS[i];
         const ox = Math.round(head.current.dx * depth);
         const oy = Math.round(head.current.dy * depth);
-        ctx.drawImage(layers[i], ox, Math.round(y0 * LH) + oy);
+
+        ctx.drawImage(layer, ox, Math.round(y0 * LH) + oy);
       }
 
       // Draw eyes on the overlay canvas — eyes ride the mid-depth (face) layer.
