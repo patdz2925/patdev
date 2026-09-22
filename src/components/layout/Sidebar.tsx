@@ -1,14 +1,23 @@
-import { Mail } from "lucide-react";
+import { Mail, MessageCircle } from "lucide-react";
 import { primaryNav, secondaryNav } from "../../data/navigation";
 import { profile } from "../../data/profile";
 import { featuredSocials, iconMap } from "../../data/socials";
 import { ThemeSwitch } from "./ThemeSwitch";
+import { useViewers } from "../../hooks/useViewers";
+
+/** Deterministic hue per anonymous visitor key for the avatar stack. */
+function visitorHue(id: string): number {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) % 360;
+  return h;
+}
 
 /**
  * Fixed left sidebar on lg+ screens.
  * Groups: primary anchors (with icons), section labels, secondary anchors, contact footer.
  */
 export function Sidebar({ active, onOpenChat }: { active: string; onOpenChat: () => void }) {
+  const viewers = useViewers();
   return (
     <nav
       aria-label="Primary"
@@ -85,7 +94,41 @@ export function Sidebar({ active, onOpenChat }: { active: string; onOpenChat: ()
 
       {/* Bottom utility area — pushed to the bottom of the sidebar */}
       <div className="mt-auto flex flex-col">
-        <div className="mt-5 flex items-center gap-2">
+        {/* Live presence + chat entry */}
+        <div className="mt-5 flex flex-col gap-1.5">
+          {viewers !== null ? (
+            <>
+              <div className="flex items-center" aria-hidden="true">
+                {viewers.slice(0, 4).map((id, i) => (
+                  <span
+                    key={id}
+                    style={{ backgroundColor: `hsl(${visitorHue(id)} 60% 45%)` }}
+                    className={`h-5 w-5 rounded-full border-2 border-white dark:border-neutral-950 ${i > 0 ? "-ml-1.5" : ""}`}
+                  />
+                ))}
+              </div>
+              <p className="font-mono text-[12px] text-neutral-400" aria-live="polite">
+                <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                  {viewers.length}
+                </span>{" "}
+                {viewers.length === 1 ? "person" : "people"} viewing now
+              </p>
+            </>
+          ) : null}
+          <button
+            type="button"
+            onClick={onOpenChat}
+            aria-haspopup="dialog"
+            className="flex w-fit cursor-pointer items-center gap-2 font-mono text-[12px] text-neutral-400 transition-colors hover:text-neutral-900 dark:hover:text-neutral-100"
+          >
+            <MessageCircle className="h-[1.15em] w-[1.15em] shrink-0" aria-hidden="true" />
+            community chat
+          </button>
+        </div>
+
+        <div className="my-4 h-px bg-neutral-200 dark:bg-neutral-800" />
+
+        <div className="flex items-center gap-2">
           <ThemeSwitch />
           <button
             type="button"
@@ -97,14 +140,6 @@ export function Sidebar({ active, onOpenChat }: { active: string; onOpenChat: ()
             {profile.availability.split(",")[0]}
           </button>
         </div>
-        <button
-          type="button"
-          onClick={onOpenChat}
-          aria-haspopup="dialog"
-          className="mt-2 w-fit cursor-pointer text-left font-mono text-[12px] text-neutral-400 transition-colors hover:text-neutral-900 dark:hover:text-neutral-100"
-        >
-          <span aria-hidden="true">community chat ↗</span>
-        </button>
 
         <div className="mt-4 border-t border-neutral-200 pt-4 dark:border-neutral-800">
           <p className="text-[12px] leading-relaxed text-neutral-400">
