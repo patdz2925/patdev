@@ -47,14 +47,14 @@ export const iconMap: Record<SocialIconName, IconComp> = {
 export type { LucideIcon };
 
 export const socials: Social[] = [
-  { label: "GitHub", href: "https://github.com/yourname", icon: "github", featured: true },
-  { label: "LinkedIn", href: "https://linkedin.com/in/yourname", icon: "linkedin", featured: true },
-  { label: "Instagram", href: "https://instagram.com/yourname", icon: "instagram", featured: true },
-  { label: "X", href: "https://x.com/yourname", icon: "x", featured: true },
+  { label: "Instagram", href: "https://www.instagram.com/patrickviraydc", icon: "instagram", featured: true },
+  { label: "Email", href: "mailto:contact@patrickdev.top", icon: "email", featured: true },
+  { label: "GitHub", href: "", icon: "github" },
+  { label: "LinkedIn", href: "", icon: "linkedin" },
+  { label: "X", href: "", icon: "x" },
   { label: "YouTube", href: "", icon: "youtube" },
-  { label: "Email", href: "mailto:you@example.com", icon: "email" },
   { label: "Website", href: "", icon: "website" },
 ];
 
-/** Hero inline links (github ↗ linkedin ↗ …) */
+/** Hero inline links (instagram ↗ email ↗ …) */
 export const featuredSocials = socials.filter((s) => s.featured && s.href);

@@ -145,9 +145,9 @@ export function Projects() {
         {filtered.length === 0 ? (
           <div className="mt-6 flex flex-col items-center rounded-2xl border border-dashed border-neutral-300 px-6 py-14 text-center dark:border-neutral-700">
             <FolderOpen className="h-6 w-6 text-neutral-300" aria-hidden="true" />
-            <p className="mt-3 font-pixel text-sm text-neutral-500">No projects in this category yet</p>
+            <p className="mt-3 font-pixel text-sm text-neutral-500">No projects here yet</p>
             <p className="mt-1 max-w-xs text-[13px] text-neutral-400">
-              Add one in <code className="rounded bg-neutral-100 px-1 dark:bg-neutral-800">src/data/projects.ts</code> — it appears here automatically.
+              Check back soon — new school projects land here first.
             </p>
           </div>
         ) : (

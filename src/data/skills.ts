@@ -13,33 +13,33 @@ export const skillGroups: SkillGroup[] = [
   {
     id: "web",
     title: "Web development",
-    skills: ["HTML", "CSS", "JavaScript", "TypeScript", "React", "Vite", "Tailwind CSS", "Git & GitHub"],
-  },
-  {
-    id: "ai",
-    title: "GenAI workflow",
-    skills: ["Prompt design", "ChatGPT / Claude", "RAG basics", "AI-assisted coding", "Eval by hand"],
+    skills: ["Web dev via GenAI", "UI design", "HTML", "CSS", "JavaScript"],
   },
   {
     id: "creative",
-    title: "Creative & editing",
-    skills: ["Premiere Pro", "CapCut", "Captions", "Sound basics", "Thumbnails", "Story pacing"],
+    title: "Design & media",
+    skills: ["Posters", "Infographics", "Banners & logos", "Shirts & photobooths", "Photography", "ATecHS Reels"],
   },
   {
-    id: "core",
-    title: "CS fundamentals",
-    skills: ["Python", "Data structures", "Basic SQL", "Problem solving"],
+    id: "video",
+    title: "Video & production",
+    skills: ["Video editing", "Short films", "Premiere Pro", "CapCut", "Photobooth ops", "Media Bank"],
+  },
+  {
+    id: "leadership",
+    title: "Leadership & comms",
+    skills: ["Team leadership", "Mentoring", "News writing", "Event coverage"],
   },
 ];
 
 /** Flat list used in Experience section ("Stack" strip) */
 export const stackHighlights = [
-  "TypeScript",
-  "React",
-  "Tailwind CSS",
-  "Python",
-  "Git",
   "GenAI",
-  "Premiere Pro",
-  "CapCut",
+  "UI Design",
+  "Posters",
+  "Video Editing",
+  "Photography",
+  "Programming",
+  "Leadership",
+  "News Writing",
 ];

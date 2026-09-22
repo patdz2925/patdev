@@ -16,53 +16,53 @@ export interface ProfileStat {
 
 export const profile = {
   // Shown in sidebar, hero, footer, and <title> fallback
-  name: "Your Name",
-  firstName: "Your",
+  name: "Patrick Dela Cruz",
+  firstName: "Patrick",
 
   // Short role line under your name
-  role: "Aspiring CS / IT Student · Student Developer",
+  role: "Grade 12 STEM Student · Developer & Creative",
 
   // Location + availability badge in hero
   location: "Philippines",
-  availability: "Open to internships, collabs & student projects",
+  availability: "Open to collabs & student projects",
 
   // Hero paragraphs — keep them short and personal, 2–3 sentences each.
   intro: [
-    "I'm a student developer learning by building. I make small web apps and experiment with generative AI — turning class ideas into things people can actually click.",
-    "Right now I'm focused on fundamentals: TypeScript, React, and how to use AI tools well. I also do creative edits on the side.",
+    "I'm Patrick, a Grade 12 STEM student at Assumpta Technical High School. I build school projects with GenAI-assisted web development — plus UI design, posters, and infographics.",
+    "I also edit short films and run media coverage: photography, reels, and photobooth operations for school events.",
   ],
 
-  // Profile photo: put your photo at public/profile.jpg, then set this to "/profile.jpg".
+  // Profile photo: send it anytime — save it as public/profile.jpg and it appears automatically.
   // Falls back to initials avatar if the file is missing.
   avatarSrc: "/profile.jpg",
-  avatarAlt: "Portrait of Your Name",
+  avatarAlt: "Portrait of Patrick Dela Cruz",
 
-  email: "you@example.com",
+  email: "contact@patrickdev.top",
 
   // Resume: the site generates a printable resume from this data (see Contact section).
   // Optionally link a PDF: put it at public/resume.pdf and set resumeUrl to "/resume.pdf".
   resumeUrl: "",
-  resumeFileName: "Your-Name-Resume.txt",
+  resumeFileName: "Patrick-Dela-Cruz-Resume.txt",
 
   // One-line summary used for SEO / footer
-  tagline: "Student developer building web projects, GenAI experiments, and creative edits.",
+  tagline: "Grade 12 STEM student building school tech projects, designs, and creative edits.",
 
-  // Four stats under the hero (reference-style). Keep values short.
+  // Four stats under the hero. Keep values short and honest.
   stats: [
-    { value: "10+", label: "projects built", href: "#projects" },
-    { value: "3+", label: "years coding", href: "#experience" },
-    { value: "5+", label: "orgs & teams", href: "#organizations" },
+    { value: "10+", label: "school projects", href: "#projects" },
+    { value: "6+", label: "leadership roles", href: "#organizations" },
+    { value: "3 yrs", label: "honors", href: "#achievements" },
     { value: "∞", label: "things learning", href: "#skills" },
   ] as ProfileStat[],
 
   // "Currently" line in About — update it often, it makes the site feel alive.
   currently: [
-    "Studying core CS: data structures, web dev, and databases",
-    "Building a GenAI study-buddy side project",
-    "Editing shorts / highlight reels for school orgs",
+    "Grade 12 STEM at Assumpta Technical High School",
+    "President of the ATecHS Society (SY 2026–2027)",
+    "Running school tech + media: Media Bank, reels, photobooths",
   ],
 
-  interests: ["Web dev", "Generative AI", "Video editing", "UI design", "Hackathons"],
+  interests: ["Web dev via GenAI", "UI design", "Posters & infographics", "Short films", "Photography"],
 } as const;
 
 export type Profile = typeof profile;
