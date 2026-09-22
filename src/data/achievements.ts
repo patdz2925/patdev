@@ -93,20 +93,20 @@ export const creativeWork: CreativeItem[] = [
 export const testimonials = [
   {
     id: "t1",
-    quote: "Dependable with deadlines and quick to learn whatever the project needs.",
-    name: "Teacher / Adviser",
-    role: "Replace with a real quote when you have one",
+    quote: "Coming Soon.",
+    name: "Name",
+    role: "",
   },
   {
     id: "t2",
-    quote: "Good eye for pacing — our event recap finally looked intentional.",
-    name: "Org President",
-    role: "Replace with a real quote when you have one",
+    quote: "Coming Soon.",
+    name: "Name",
+    role: "",
   },
   {
     id: "t3",
-    quote: "Asks sharp questions and documents the answer so the next person is faster.",
-    name: "Teammate",
-    role: "Replace with a real quote when you have one",
+    quote: "Coming Soon.",
+    name: "Name",
+    role: "",
   },
 ];
