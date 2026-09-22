@@ -8,7 +8,7 @@ import { Reveal } from "../layout/Reveal";
  * Links to GitHub so it's honest, not fake data.
  */
 export function GithubStrip() {
-  const github = socials.find((s) => s.icon === "github" && s.href)?.href ?? "https://github.com";
+  const github = socials.find((s) => s.icon === "github" && s.href)?.href ?? "https://github.com/patdz2925";
 
   const cells = useMemo(() => {
     // Deterministic pseudo-levels (no API, no randomness) so output is stable.
