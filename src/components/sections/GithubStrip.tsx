@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { socials } from "../../data/socials";
 import { SectionHeading } from "../layout/SectionHeading";
 import { Reveal } from "../layout/Reveal";
 
