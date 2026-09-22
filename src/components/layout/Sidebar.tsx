@@ -7,16 +7,13 @@ import { ThemeSwitch } from "./ThemeSwitch";
 /**
  * Fixed left sidebar on lg+ screens.
  * Groups: primary anchors (with icons), section labels, secondary anchors, contact footer.
- * Uses flexbox to fit entire content within viewport height.
  */
 export function Sidebar({ active, onOpenChat }: { active: string; onOpenChat: () => void }) {
   return (
     <nav
       aria-label="Primary"
-      className="fixed inset-y-0 left-0 z-50 hidden w-60 flex-col border-r border-neutral-200 bg-white px-7 py-7 lg:flex dark:border-neutral-800 dark:bg-neutral-950"
-      style={{ height: "100vh", minHeight: 0 }}
+      className="fixed inset-y-0 left-0 z-50 hidden w-60 flex-col border-r border-neutral-200 bg-white px-7 py-8 lg:flex dark:border-neutral-800 dark:bg-neutral-950"
     >
-      {/* Logo / Name */}
       <a
         href="#home"
         className="shrink-0 font-pixel text-[15px] leading-none text-neutral-900 hover:opacity-60 dark:text-neutral-100"
@@ -24,11 +21,10 @@ export function Sidebar({ active, onOpenChat }: { active: string; onOpenChat: ()
         {profile.name}
       </a>
 
-      {/* Main navigation area — fills available space */}
-      <div className="mt-5 flex-1 min-h-0 overflow-y-auto flex flex-col gap-6">
+      <div className="mt-5 flex flex-1 flex-col gap-5 overflow-visible font-mono text-[13px]">
         {/* Primary navigation */}
-        <div className="flex flex-col gap-2">
-          <p className="mb-1 font-mono text-[13px] uppercase tracking-wider text-neutral-400">
+        <div className="flex flex-col gap-2.5">
+          <p className="mb-1.5 font-mono text-[13px] uppercase tracking-wider text-neutral-400">
             Navigation
           </p>
           {primaryNav.map((item) => {
@@ -61,8 +57,8 @@ export function Sidebar({ active, onOpenChat }: { active: string; onOpenChat: ()
         <div className="my-4 h-px bg-neutral-200 dark:bg-neutral-800" />
 
         {/* Secondary navigation */}
-        <div className="flex flex-col gap-2">
-          <p className="mb-1 font-mono text-[13px] uppercase tracking-wider text-neutral-400">
+        <div className="flex flex-col gap-2.5">
+          <p className="mb-1.5 font-mono text-[13px] uppercase tracking-wider text-neutral-400">
             Other
           </p>
           {secondaryNav.map((item) => {
@@ -87,85 +83,50 @@ export function Sidebar({ active, onOpenChat }: { active: string; onOpenChat: ()
         </div>
       </div>
 
-      {/* Bottom utility area — compact, stays near bottom of viewport */}
-      <div className="shrink-0 flex flex-col gap-5 border-t border-neutral-200 pt-5 dark:border-neutral-800">
-        {/* Keyboard shortcuts */}
-        <div className="flex flex-col gap-1.5 font-mono text-[12px] text-neutral-400">
-          <div className="flex items-center gap-2">
-            <kbd className="px-1.5 py-0.5 text-[11px] border border-neutral-200 rounded bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900">Alt</kbd>
-            <kbd className="px-1.5 py-0.5 text-[11px] border border-neutral-200 rounded bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900">K</kbd>
-            <span>Ask anything</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <kbd className="px-1.5 py-0.5 text-[11px] border border-neutral-200 rounded bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900">Alt</kbd>
-            <kbd className="px-1.5 py-0.5 text-[11px] border border-neutral-200 rounded bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900">J</kbd>
-            <span>Typing test</span>
-          </div>
-        </div>
-
-        <div className="h-px bg-neutral-200 dark:bg-neutral-800" />
-
-        {/* Online viewers */}
-        <div className="flex flex-col gap-2 font-mono text-[12px] text-neutral-400">
+      {/* Bottom utility area — pushed to the bottom of the sidebar */}
+      <div className="mt-auto flex flex-col">
+        <div className="mt-5 flex items-center gap-2">
+          <ThemeSwitch />
           <button
             type="button"
             onClick={onOpenChat}
             aria-haspopup="dialog"
-            className="flex w-fit cursor-pointer items-center gap-1.5 text-left transition-colors hover:text-neutral-900 dark:hover:text-neutral-100"
+            className="cursor-pointer text-left font-mono text-[12px] text-neutral-400 transition-colors hover:text-neutral-900 dark:hover:text-neutral-100"
           >
-            <span className="pulse-dot inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            <span className="pulse-dot mr-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 align-middle" />
             {profile.availability.split(",")[0]}
           </button>
-          <span>people viewing now</span>
-          <button
-            type="button"
-            onClick={onOpenChat}
-            aria-haspopup="dialog"
-            className="w-fit cursor-pointer text-left transition-colors hover:text-neutral-900 dark:hover:text-neutral-100"
+        </div>
+
+        <div className="mt-4 border-t border-neutral-200 pt-4 dark:border-neutral-800">
+          <p className="text-[12px] leading-relaxed text-neutral-400">
+            For work, collabs &amp; everything else, reach me at
+          </p>
+          <a
+            href={`mailto:${profile.email}`}
+            className="mt-1.5 inline-flex w-fit items-center gap-2 font-mono text-[13px] text-neutral-900 hover:text-neutral-500 dark:text-neutral-100 dark:hover:text-neutral-400"
           >
-            community chat
-          </button>
-        </div>
-
-        <div className="h-px bg-neutral-200 dark:bg-neutral-800" />
-
-        {/* Theme switch */}
-        <div className="flex items-center justify-between">
-          <ThemeSwitch />
-        </div>
-
-        {/* Contact message */}
-        <p className="mt-3 text-[12px] leading-relaxed text-neutral-400">
-          For work, collabs & everything else, reach me at
-        </p>
-
-        {/* Email */}
-        <a
-          href={`mailto:${profile.email}`}
-          className="mt-2 inline-flex w-fit items-center gap-2 font-mono text-[12px] text-neutral-900 hover:text-neutral-500 dark:text-neutral-100 dark:hover:text-neutral-400"
-        >
-          <Mail className="h-[1.15em] w-[1.15em] shrink-0" aria-hidden="true" />
-          <span className="break-all">{profile.email}</span>
-        </a>
-
-        {/* Featured socials */}
-        <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 font-mono text-[11px] text-neutral-400">
-          {featuredSocials.map((s) => {
-            const Icon = iconMap[s.icon];
-            return (
-              <a
-                key={s.label}
-                href={s.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 hover:text-neutral-900 dark:hover:text-neutral-100"
-              >
-                <Icon className="h-3 w-3" aria-hidden="true" />
-                <span className="sr-only">{s.label}</span>
-                <span aria-hidden="true">{s.label.toLowerCase()} ↗</span>
-              </a>
-            );
-          })}
+            <Mail className="h-[1.15em] w-[1.15em] shrink-0" aria-hidden="true" />
+            <span className="break-all">{profile.email}</span>
+          </a>
+          <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 font-mono text-[11px] text-neutral-400">
+            {featuredSocials.map((s) => {
+              const Icon = iconMap[s.icon];
+              return (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 hover:text-neutral-900 dark:hover:text-neutral-100"
+                >
+                  <Icon className="h-3 w-3" aria-hidden="true" />
+                  <span className="sr-only">{s.label}</span>
+                  <span aria-hidden="true">{s.label.toLowerCase()} ↗</span>
+                </a>
+              );
+            })}
+          </div>
         </div>
       </div>
     </nav>
