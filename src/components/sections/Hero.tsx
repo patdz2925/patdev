@@ -1,10 +1,7 @@
 import { MapPin } from "lucide-react";
 import { profile } from "../../data/profile";
 import { featuredSocials } from "../../data/socials";
-import { Mascot } from "../layout/Mascot";
-
-
-
+import { InteractivePortrait } from "../InteractivePortrait";
 
 export function Hero() {
   return (
@@ -12,12 +9,7 @@ export function Hero() {
       <div className="grid gap-9 sm:grid-cols-[16rem_1fr] sm:items-start sm:gap-10">
         <div className="reveal d1 mx-auto w-full max-w-[16rem] sm:mx-0">
           <div className="relative">
-            <Mascot
-              directions="/mascots/patrick-directions.webp"
-              reactions="/mascots/patrick-reactions.webp"
-              size={256}
-              label="patrick"
-            />
+            <InteractivePortrait label={`Portrait of ${profile.name}`} />
             <div
               aria-hidden="true"
               className="halftone-fine mask-bl pointer-events-none absolute -bottom-8 -left-6 h-24 w-32 opacity-25"
