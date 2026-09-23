@@ -106,8 +106,10 @@ const boxStyle = (box: ViewDef["box"]) => ({
   maxWidth: "none",
 });
 
-/** Portrait-box widths from centre that map to a full-gaze vector. */
+/** Portrait-box widths from centre that map to a full-gaze vector (mouse). */
 const REACH = 0.6;
+/** Finger-drag pixels from the touch anchor that map to full gaze (touch). */
+const TOUCH_RANGE = 130;
 /** Neutral zone so the centre view dominates near the middle. */
 const DEADZONE = 0.08;
 /** Per-frame easing toward the target — subtle inertia, no snapping. */
@@ -161,6 +163,9 @@ export function InteractivePortrait({
   // Shared gaze target so the loop, pointer handlers, and touch handlers all
   // read/write one vector without re-rendering.
   const targetRef = useRef({ x: 0, y: 0 });
+  // Active touch-drag anchor (relative trackpad-style control). Null fields
+  // mean "no finger down".
+  const touchDragRef = useRef({ active: false, ax: 0, ay: 0 });
   const motionMQRef = useRef<MediaQueryList | null>(null);
 
   // Keep capability live — only the media-query change handlers write state.
@@ -236,7 +241,19 @@ export function InteractivePortrait({
       target.x = 0;
       target.y = 0;
     };
-    const onPointerMove = (e: PointerEvent) => track(e.clientX, e.clientY);
+    const onPointerMove = (e: PointerEvent) => {
+      // Touch uses relative drag-from-anchor control (works anywhere on the
+      // page and stays controllable on small screens); mouse keeps absolute
+      // cursor-relative tracking.
+      if (e.pointerType === "touch") {
+        const d = touchDragRef.current;
+        if (!d.active || !e.isPrimary) return;
+        target.x = shapeAxis((e.clientX - d.ax) / TOUCH_RANGE);
+        target.y = shapeAxis((e.clientY - d.ay) / TOUCH_RANGE);
+        return;
+      }
+      track(e.clientX, e.clientY);
+    };
     const onMouseOut = (e: MouseEvent) => {
       if (!e.relatedTarget) reset();
     };
@@ -294,29 +311,47 @@ export function InteractivePortrait({
     };
   }, [base, capable, touchReady]);
 
-  // Touch support (phones/tablets): the first touch arms the directional
-  // layers; the finger position then drives the gaze through the same
-  // pointermove path above, and lifting the finger eases back to centre.
+  // Touch support (phones/tablets): touching anywhere anchors a relative
+  // drag — the gaze follows finger displacement from the anchor, like a
+  // trackpad, so control never depends on where the portrait sits. Lifting
+  // the finger eases back to centre. A scroll-takeover freeze (pointercancel)
+  // intentionally holds the last pose instead of snapping home; the
+  // guaranteed touchend/touchcancel below always recenters on lift.
   // Never arms under prefers-reduced-motion.
   useEffect(() => {
     if (base !== "views") return;
     const onDown = (e: PointerEvent) => {
-      if (e.pointerType !== "touch") return;
+      if (e.pointerType !== "touch" || !e.isPrimary) return;
       if (motionMQRef.current?.matches) return;
+      touchDragRef.current = {
+        active: true,
+        ax: e.clientX,
+        ay: e.clientY,
+      };
       setTouchReady(true);
     };
     const onUp = (e: PointerEvent) => {
-      if (e.pointerType !== "touch") return;
+      if (e.pointerType !== "touch" || !e.isPrimary) return;
+      touchDragRef.current.active = false;
+      targetRef.current.x = 0;
+      targetRef.current.y = 0;
+    };
+    // Touch Events (not Pointer Events) always fire on lift, even after a
+    // scroll-takeover cancelled the pointer stream.
+    const onTouchEnd = () => {
+      touchDragRef.current.active = false;
       targetRef.current.x = 0;
       targetRef.current.y = 0;
     };
     window.addEventListener("pointerdown", onDown, { passive: true });
     window.addEventListener("pointerup", onUp, { passive: true });
-    window.addEventListener("pointercancel", onUp, { passive: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    window.addEventListener("touchcancel", onTouchEnd, { passive: true });
     return () => {
       window.removeEventListener("pointerdown", onDown);
       window.removeEventListener("pointerup", onUp);
-      window.removeEventListener("pointercancel", onUp);
+      window.removeEventListener("touchend", onTouchEnd);
+      window.removeEventListener("touchcancel", onTouchEnd);
     };
   }, [base]);
 
