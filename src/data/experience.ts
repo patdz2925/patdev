@@ -27,6 +27,8 @@ export interface OrganizationItem {
   role: string;
   period: string;
   description?: string;
+  /** Optional logo shown in place of the generic icon */
+  logo?: string;
 }
 
 export const experience: ExperienceItem[] = [
@@ -97,6 +99,7 @@ export const organizations: OrganizationItem[] = [
     period: "2025 – present",
     description:
       "Lead school tech and media: Project PiTechs, PrinTECHS, TUKLAS, Media Bank, and photobooth operations. Mentor Grade 10 Computer Programming students.",
+    logo: "/orgs/atechs-logo.png",
   },
   {
     id: "badminton-club",

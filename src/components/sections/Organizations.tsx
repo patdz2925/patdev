@@ -14,8 +14,17 @@ export function Organizations() {
         <div className="divide-y divide-neutral-200 border-y border-neutral-200 dark:divide-neutral-800 dark:border-neutral-800">
           {organizations.map((o) => (
             <div key={o.id} className="flex items-start gap-4 py-4">
-              <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-400">
-                <Users className="h-4 w-4" aria-hidden="true" />
+              <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-neutral-200 bg-white text-neutral-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-400">
+                {o.logo ? (
+                  <img
+                    src={o.logo}
+                    alt={`${o.name} logo`}
+                    draggable={false}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <Users className="h-4 w-4" aria-hidden="true" />
+                )}
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
