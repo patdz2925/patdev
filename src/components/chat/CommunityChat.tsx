@@ -137,7 +137,21 @@ export function CommunityChat({
     const { data: listener } = client.auth.onAuthStateChange(
       (event, sess) => {
         setSession(sess);
-        if (event === "SIGNED_IN") loadMessages();
+        if (event === "SIGNED_IN") {
+          loadMessages();
+          // Audit-log the login (admin-only table; missing until the SQL
+          // below is run — a failed insert is non-fatal by design).
+          if (ADMIN_UID && sess?.user?.id === ADMIN_UID) {
+            void client
+              .from("admin_logins")
+              .insert({
+                admin_uid: sess.user.id,
+                email: sess.user.email ?? "",
+                user_agent: navigator.userAgent,
+              })
+              .then(() => {});
+          }
+        }
         if (event === "SIGNED_OUT") {
           setMessages((prev) => prev.filter((m) => !m.deleted_at));
         }
