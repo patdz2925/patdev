@@ -166,6 +166,8 @@ export function InteractivePortrait({
   // Active touch-drag anchor (relative trackpad-style control). Null fields
   // mean "no finger down".
   const touchDragRef = useRef({ active: false, ax: 0, ay: 0 });
+  // Identifier of the tracked touch (-1 = pointer-event fallback path).
+  const activeTouchId = useRef<number | null>(null);
   const motionMQRef = useRef<MediaQueryList | null>(null);
 
   // Keep capability live — only the media-query change handlers write state.
@@ -311,47 +313,84 @@ export function InteractivePortrait({
     };
   }, [base, capable, touchReady]);
 
-  // Touch support (phones/tablets): touching anywhere anchors a relative
+  // Touch support (phones/tablets): touching the portrait anchors a relative
   // drag — the gaze follows finger displacement from the anchor, like a
   // trackpad, so control never depends on where the portrait sits. Lifting
-  // the finger eases back to centre. A scroll-takeover freeze (pointercancel)
-  // intentionally holds the last pose instead of snapping home; the
-  // guaranteed touchend/touchcancel below always recenters on lift.
-  // Never arms under prefers-reduced-motion.
+  // the finger eases back to centre. Never arms under prefers-reduced-motion.
+  //
+  // Safari robustness: the handlers live ON the portrait element and the
+  // non-passive move calls preventDefault, so iOS Safari can never hijack a
+  // portrait gesture for scroll regardless of its touch-action quirks (the
+  // old failure mode: scroll-takeover starved us of events unless a
+  // selection was active). Gestures starting elsewhere scroll untouched. A
+  // scroll-freeze (pointercancel) intentionally holds the last pose; the
+  // guaranteed end handlers below always recenter on lift.
   useEffect(() => {
     if (base !== "views") return;
+    const el = wrapRef.current;
+
+    const arm = (x: number, y: number, id: number) => {
+      if (activeTouchId.current !== null) return; // already tracking a finger
+      if (motionMQRef.current?.matches) return;
+      activeTouchId.current = id;
+      touchDragRef.current = { active: true, ax: x, ay: y };
+      setTouchReady(true);
+    };
+    const release = (id: number | null) => {
+      if (id !== null && id !== activeTouchId.current) return;
+      activeTouchId.current = null;
+      touchDragRef.current.active = false;
+      targetRef.current.x = 0;
+      targetRef.current.y = 0;
+    };
+    const steer = (x: number, y: number, id: number) => {
+      const d = touchDragRef.current;
+      if (id !== activeTouchId.current || !d.active) return;
+      targetRef.current.x = shapeAxis((x - d.ax) / TOUCH_RANGE);
+      targetRef.current.y = shapeAxis((y - d.ay) / TOUCH_RANGE);
+    };
+
+    const onTouchStart = (e: TouchEvent) => {
+      const t = e.changedTouches[0];
+      arm(t.clientX, t.clientY, t.identifier);
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      // Kill the scroll before it starts; only the tracked finger steers.
+      e.preventDefault();
+      for (const t of Array.from(e.changedTouches)) {
+        steer(t.clientX, t.clientY, t.identifier);
+      }
+    };
+    const onTouchEnd = (e: TouchEvent) => {
+      for (const t of Array.from(e.changedTouches)) {
+        release(t.identifier);
+      }
+    };
+
+    // Window-level pointer handlers: fallback arming/tracking for hybrid
+    // devices and touches starting off-portrait.
     const onDown = (e: PointerEvent) => {
       if (e.pointerType !== "touch" || !e.isPrimary) return;
-      if (motionMQRef.current?.matches) return;
-      touchDragRef.current = {
-        active: true,
-        ax: e.clientX,
-        ay: e.clientY,
-      };
-      setTouchReady(true);
+      arm(e.clientX, e.clientY, -1);
     };
     const onUp = (e: PointerEvent) => {
       if (e.pointerType !== "touch" || !e.isPrimary) return;
-      touchDragRef.current.active = false;
-      targetRef.current.x = 0;
-      targetRef.current.y = 0;
+      release(null);
     };
-    // Touch Events (not Pointer Events) always fire on lift, even after a
-    // scroll-takeover cancelled the pointer stream.
-    const onTouchEnd = () => {
-      touchDragRef.current.active = false;
-      targetRef.current.x = 0;
-      targetRef.current.y = 0;
-    };
+
+    el?.addEventListener("touchstart", onTouchStart, { passive: true });
+    el?.addEventListener("touchmove", onTouchMove, { passive: false });
+    el?.addEventListener("touchend", onTouchEnd, { passive: true });
+    el?.addEventListener("touchcancel", onTouchEnd, { passive: true });
     window.addEventListener("pointerdown", onDown, { passive: true });
     window.addEventListener("pointerup", onUp, { passive: true });
-    window.addEventListener("touchend", onTouchEnd, { passive: true });
-    window.addEventListener("touchcancel", onTouchEnd, { passive: true });
     return () => {
+      el?.removeEventListener("touchstart", onTouchStart);
+      el?.removeEventListener("touchmove", onTouchMove);
+      el?.removeEventListener("touchend", onTouchEnd);
+      el?.removeEventListener("touchcancel", onTouchEnd);
       window.removeEventListener("pointerdown", onDown);
       window.removeEventListener("pointerup", onUp);
-      window.removeEventListener("touchend", onTouchEnd);
-      window.removeEventListener("touchcancel", onTouchEnd);
     };
   }, [base]);
 
