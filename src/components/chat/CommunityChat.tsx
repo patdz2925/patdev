@@ -1,8 +1,21 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { MessageCircle, RotateCw, Send, WifiOff, X } from "lucide-react";
 import {
+  LogOut,
+  MessageCircle,
+  RotateCw,
+  Send,
+  Shield,
+  ShieldCheck,
+  Trash,
+  Undo2,
+  WifiOff,
+  X,
+} from "lucide-react";
+import type { RealtimeChannel, Session } from "@supabase/supabase-js";
+import {
+  ADMIN_UID,
   isChatConfigured,
   supabase,
   type ChatMessage,
@@ -46,9 +59,22 @@ export function CommunityChat({
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
 
+  // Admin session (site owner only — no signup UI exists, so any session
+  // here was created in the Supabase dashboard). Buttons render only when
+  // the signed-in UID matches ADMIN_UID; enforcement itself lives in RLS.
+  const [session, setSession] = useState<Session | null>(null);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authBusy, setAuthBusy] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const isAdmin = !!ADMIN_UID && session?.user?.id === ADMIN_UID;
+  const adminRef = useRef(false);
+
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const stickRef = useRef(true);
+  const channelRef = useRef<RealtimeChannel | null>(null);
 
   // Reset session state on the render where the panel opens (adjusting state
   // during render for a prop transition — avoids setState inside an effect).
@@ -60,6 +86,51 @@ export function CommunityChat({
       if (isChatConfigured) setLoading(true);
     }
   }
+
+  // Keep the realtime callbacks' admin view fresh without re-subscribing.
+  useEffect(() => {
+    adminRef.current = isAdmin;
+  }, [isAdmin]);
+
+  // Shared history loader (open, retry, post-sign-in, restore events).
+  const loadMessages = useCallback(() => {
+    const client = supabase;
+    if (!client) return;
+    setLoading(true);
+    setLoadError(null);
+    stickRef.current = true;
+    client
+      .from("messages")
+      .select("id,nickname,message,created_at,deleted_at")
+      .order("created_at", { ascending: true })
+      .limit(HISTORY_LIMIT)
+      .then(({ data, error }) => {
+        if (error) {
+          setLoadError("Couldn't load messages. Check your connection.");
+        } else {
+          setMessages((data ?? []) as ChatMessage[]);
+        }
+        setLoading(false);
+      });
+  }, []);
+
+  // Auth session: stay signed in across visits; reload the feed when admin
+  // powers arrive (muted rows become visible) and scrub them on sign-out.
+  useEffect(() => {
+    const client = supabase;
+    if (!client) return;
+    client.auth.getSession().then(({ data }) => setSession(data.session));
+    const { data: listener } = client.auth.onAuthStateChange(
+      (event, sess) => {
+        setSession(sess);
+        if (event === "SIGNED_IN") loadMessages();
+        if (event === "SIGNED_OUT") {
+          setMessages((prev) => prev.filter((m) => !m.deleted_at));
+        }
+      }
+    );
+    return () => listener.subscription.unsubscribe();
+  }, [loadMessages]);
 
   // Lock page scroll + close on Escape while the panel is open.
   useEffect(() => {
@@ -75,17 +146,21 @@ export function CommunityChat({
     };
   }, [open, onClose]);
 
-  // Load history + subscribe to INSERTs each time the panel opens.
+  // Load history + subscribe each time the panel opens. INSERT/UPDATE/DELETE
+  // keep every viewer in sync; a lightweight broadcast additionally covers
+  // soft-delete visibility flips, which RLS hides from anonymous streams.
   // Unsubscribe on close/unmount so no channel leaks.
   useEffect(() => {
     const client = supabase;
     if (!open || !client) return;
     let cancelled = false;
-    stickRef.current = true;
 
+    // Loading/error reset for a fresh open already happened in the
+    // render-time transition above; the fetch below only resolves async.
+    stickRef.current = true;
     client
       .from("messages")
-      .select("id,nickname,message,created_at")
+      .select("id,nickname,message,created_at,deleted_at")
       .order("created_at", { ascending: true })
       .limit(HISTORY_LIMIT)
       .then(({ data, error }) => {
@@ -111,13 +186,55 @@ export function CommunityChat({
           );
         }
       )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "messages" },
+        (payload) => {
+          const row = payload.new as ChatMessage;
+          const admin = adminRef.current;
+          setMessages((prev) => {
+            // A freshly muted row must vanish for regular visitors.
+            if (row.deleted_at && !admin) {
+              return prev.filter((m) => m.id !== row.id);
+            }
+            const i = prev.findIndex((m) => m.id === row.id);
+            if (i === -1) {
+              // Newly visible row (e.g. a restore) — insert chronologically.
+              const next = [...prev, row];
+              next.sort((a, b) => (a.created_at < b.created_at ? -1 : 1));
+              return next;
+            }
+            const next = [...prev];
+            next[i] = row;
+            return next;
+          });
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "messages" },
+        (payload) => {
+          const old = payload.old as { id: string };
+          setMessages((prev) => prev.filter((m) => m.id !== old.id));
+        }
+      )
+      .on("broadcast", { event: "visibility" }, ({ payload }) => {
+        const vis = payload as { id: string; deleted: boolean };
+        if (vis.deleted) {
+          setMessages((prev) => prev.filter((m) => m.id !== vis.id));
+        } else {
+          loadMessages();
+        }
+      })
       .subscribe();
 
+    channelRef.current = channel;
     return () => {
       cancelled = true;
+      channelRef.current = null;
       client.removeChannel(channel);
     };
-  }, [open]);
+  }, [open, loadMessages]);
 
   // Focus the message box when the panel opens.
   useEffect(() => {
@@ -180,27 +297,61 @@ export function CommunityChat({
   };
 
   const retry = () => {
-    setLoadError(null);
-    setLoading(true);
     if (!supabase) {
-      setLoading(false);
       setLoadError("Chat isn't configured in this environment.");
       return;
     }
-    supabase
+    loadMessages();
+  };
+
+  // Owner-only moderation. RLS enforces the permission server-side; these
+  // just flip the soft-delete marker (delete = hide, restore = un-hide).
+  const setVisibility = async (id: string, deleted: boolean) => {
+    const client = supabase;
+    if (!client) return;
+    const { error } = await client
       .from("messages")
-      .select("id,nickname,message,created_at")
-      .order("created_at", { ascending: true })
-      .limit(HISTORY_LIMIT)
-      .then(({ data, error }) => {
-        if (error) {
-          setLoadError("Couldn't load messages. Check your connection.");
-        } else {
-          setMessages((data ?? []) as ChatMessage[]);
-          stickRef.current = true;
-        }
-        setLoading(false);
+      .update({ deleted_at: deleted ? new Date().toISOString() : null })
+      .eq("id", id);
+    if (error) {
+      setSendError("Couldn't update that message. Try again.");
+      return;
+    }
+    // Nudge anonymous viewers, whose RLS-filtered stream can't see the flip.
+    try {
+      await channelRef.current?.send({
+        type: "broadcast",
+        event: "visibility",
+        payload: { id, deleted },
       });
+    } catch {
+      // Realtime postgres echo already covers admins; others catch up on reopen.
+    }
+  };
+
+  const signIn = async (e: FormEvent) => {
+    e.preventDefault();
+    const client = supabase;
+    if (!client || authBusy) return;
+    setAuthBusy(true);
+    setAuthError(null);
+    const { error } = await client.auth.signInWithPassword({
+      email: authEmail.trim(),
+      password: authPassword,
+    });
+    setAuthBusy(false);
+    if (error) {
+      setAuthError("Sign in failed. Check your credentials.");
+      return;
+    }
+    setAuthOpen(false);
+    setAuthPassword("");
+  };
+
+  const signOut = async () => {
+    const client = supabase;
+    if (!client) return;
+    await client.auth.signOut();
   };
 
   return (
@@ -243,6 +394,36 @@ export function CommunityChat({
                   shared live with every visitor
                 </p>
               </div>
+              {ADMIN_UID ? (
+                session ? (
+                  <button
+                    type="button"
+                    onClick={signOut}
+                    aria-label={isAdmin ? "Sign out (admin)" : "Sign out"}
+                    title={isAdmin ? "Signed in as admin" : "Sign out"}
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
+                  >
+                    {isAdmin ? (
+                      <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+                    ) : (
+                      <LogOut className="h-4 w-4" aria-hidden="true" />
+                    )}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthOpen((v) => !v);
+                      setAuthError(null);
+                    }}
+                    aria-label="Admin sign in"
+                    title="Admin sign in"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
+                  >
+                    <Shield className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                )
+              ) : null}
               <button
                 type="button"
                 onClick={onClose}
@@ -252,6 +433,50 @@ export function CommunityChat({
                 <X className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
+
+            {/* Owner sign-in (only offered once ADMIN_UID is configured) */}
+            {ADMIN_UID && authOpen && !session ? (
+              <form
+                onSubmit={signIn}
+                className="flex shrink-0 flex-col gap-2 border-b border-neutral-200 px-4 py-3 dark:border-neutral-800"
+              >
+                <p className="font-mono text-[11px] uppercase tracking-wider text-neutral-400">
+                  admin sign in
+                </p>
+                <input
+                  type="email"
+                  value={authEmail}
+                  onChange={(e) => setAuthEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  aria-label="Admin email"
+                  autoComplete="email"
+                  required
+                  className="w-full rounded-lg border border-neutral-200 bg-white px-2.5 py-2 text-[13px] text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                />
+                <input
+                  type="password"
+                  value={authPassword}
+                  onChange={(e) => setAuthPassword(e.target.value)}
+                  placeholder="password"
+                  aria-label="Admin password"
+                  autoComplete="current-password"
+                  required
+                  className="w-full rounded-lg border border-neutral-200 bg-white px-2.5 py-2 text-[13px] text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                />
+                {authError ? (
+                  <p role="alert" className="font-mono text-[11px] text-red-500">
+                    {authError}
+                  </p>
+                ) : null}
+                <button
+                  type="submit"
+                  disabled={authBusy}
+                  className="inline-flex items-center justify-center rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                >
+                  {authBusy ? "Signing in…" : "Sign in"}
+                </button>
+              </form>
+            ) : null}
 
             {/* Messages */}
             <div
@@ -301,15 +526,48 @@ export function CommunityChat({
               ) : (
                 <ul className="flex flex-col gap-3">
                   {messages.map((m) => (
-                    <li key={m.id} className="min-w-0">
-                      <p className="flex flex-wrap items-baseline gap-x-2">
-                        <span className="text-[13px] font-medium text-neutral-900 dark:text-neutral-100">
-                          {m.nickname}
-                        </span>
-                        <span className="font-mono text-[10.5px] text-neutral-400">
-                          {formatTime(m.created_at)}
-                        </span>
-                      </p>
+                    <li
+                      key={m.id}
+                      className={`min-w-0 ${m.deleted_at ? "opacity-50" : ""}`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="flex min-w-0 flex-wrap items-baseline gap-x-2">
+                          <span className="text-[13px] font-medium text-neutral-900 dark:text-neutral-100">
+                            {m.nickname}
+                          </span>
+                          <span className="font-mono text-[10.5px] text-neutral-400">
+                            {formatTime(m.created_at)}
+                          </span>
+                          {m.deleted_at ? (
+                            <span className="font-mono text-[10.5px] text-neutral-400">
+                              · hidden
+                            </span>
+                          ) : null}
+                        </p>
+                        {isAdmin ? (
+                          m.deleted_at ? (
+                            <button
+                              type="button"
+                              onClick={() => setVisibility(m.id, false)}
+                              aria-label={`Restore message from ${m.nickname}`}
+                              title="Restore"
+                              className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
+                            >
+                              <Undo2 className="h-3.5 w-3.5" aria-hidden="true" />
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setVisibility(m.id, true)}
+                              aria-label={`Delete message from ${m.nickname}`}
+                              title="Delete"
+                              className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-neutral-400 hover:bg-neutral-100 hover:text-red-500 dark:hover:bg-neutral-800"
+                            >
+                              <Trash className="h-3.5 w-3.5" aria-hidden="true" />
+                            </button>
+                          )
+                        ) : null}
+                      </div>
                       <p className="mt-0.5 break-words text-[13.5px] leading-relaxed whitespace-pre-wrap text-neutral-600 dark:text-neutral-300">
                         {m.message}
                       </p>
