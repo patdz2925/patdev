@@ -390,11 +390,17 @@ export function InteractivePortrait({
   }
 
   return (
+    // Touch-control surface: pointer-events-auto + touch-none keeps the
+    // browser from hijacking portrait gestures for scroll/selection, so the
+    // full pointermove stream reaches us. Touches starting anywhere else on
+    // the page still scroll normally. Callout disabled so long-presses don't
+    // pop up image menus either.
     <div
       ref={wrapRef}
       role="img"
       aria-label={label}
-      className={`pointer-events-none relative mx-auto aspect-[509/534] w-full touch-pan-y select-none overflow-hidden ${className}`}
+      className={`pointer-events-auto relative mx-auto aspect-[509/534] w-full touch-none select-none overflow-hidden ${className}`}
+      style={{ WebkitTouchCallout: "none" }}
     >
       {/* Centre view — same uniform frame as every layer. Its measured
           geometry is exactly full-bleed, which is what fixes the box aspect
