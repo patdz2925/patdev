@@ -51,7 +51,7 @@ export const projects: Project[] = [
   featured: true,
   badge: "School tech",
   highlights: ["GenAI-assisted build", "UI design + programming", "Built with the ATecHS Society"],
-  image: "/projects/pitechs.gif",
+  image: "/projects/main-banner.png",
 },
   {
     id: "media-bank",
@@ -66,6 +66,7 @@ export const projects: Project[] = [
     featured: true,
     badge: "Live ops",
     highlights: ["Central media library", "Supports org + class projects", "Tied to event coverage"],
+    image: "/projects/main-banner.png",
   },
   {
     id: "atechs-reels",
@@ -80,6 +81,7 @@ export const projects: Project[] = [
     featured: true,
     badge: "Creative",
     highlights: ["Event photography", "Short-form reels", "Captions + fast turnaround"],
+    image: "/projects/main-banner.png",
   },
   {
     id: "printechs",
@@ -92,6 +94,7 @@ export const projects: Project[] = [
     date: "2025 – 2026",
     status: "In progress",
     highlights: ["School technology project", "Design + code"],
+    image: "/projects/main-banner.png",
   },
   {
     id: "tuklas",
@@ -104,6 +107,7 @@ export const projects: Project[] = [
     date: "2025 – 2026",
     status: "In progress",
     highlights: ["Experimental school project", "New tools + ideas"],
+    image: "/projects/main-banner.png",
   },
   {
     id: "posters-infographics",

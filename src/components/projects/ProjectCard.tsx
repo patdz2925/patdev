@@ -9,7 +9,7 @@ const statusColor: Record<Project["status"], string> = {
   Concept: "bg-sky-500",
 };
 
-/** Category initial used for the gradient thumb — no external images needed. */
+/** Project banner when one is set — otherwise the gradient initial thumb. */
 function Thumb({ project }: { project: Project }) {
   const initials = project.title
     .split(" ")
@@ -22,8 +22,19 @@ function Thumb({ project }: { project: Project }) {
       aria-hidden="true"
       className="relative flex h-28 items-center justify-center overflow-hidden rounded-lg border border-neutral-200 bg-gradient-to-br from-neutral-900 via-neutral-700 to-neutral-400 dark:border-neutral-700"
     >
-      <div className="halftone halftone-dense absolute inset-0 opacity-20" />
-      <span className="relative font-pixel text-2xl text-white">{initials || "✦"}</span>
+      {project.image ? (
+        <img
+          src={project.image}
+          alt=""
+          draggable={false}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : (
+        <>
+          <div className="halftone halftone-dense absolute inset-0 opacity-20" />
+          <span className="relative font-pixel text-2xl text-white">{initials || "✦"}</span>
+        </>
+      )}
       <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-neutral-900">
         {project.category}
       </span>
