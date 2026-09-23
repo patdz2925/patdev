@@ -145,8 +145,9 @@ export function InteractivePortrait({
 
   const [base, setBase] = useState<"views" | "fallback" | "error">("views");
 
-  // Capability: fine-pointer desktops with motion allowed get cursor tracking;
-  // touch/coarse pointers and reduced-motion users keep a static centre view.
+  // Capability: fine-pointer desktops with motion allowed get cursor tracking
+  // immediately; touch devices arm the same tracking on first touch (see
+  // touch effect below). Reduced-motion users always keep a static centre.
   const [capable, setCapable] = useState<boolean>(() => {
     if (typeof window === "undefined" || !window.matchMedia) return false;
     return (
@@ -154,12 +155,20 @@ export function InteractivePortrait({
       !window.matchMedia("(prefers-reduced-motion: reduce)").matches
     );
   });
+  // Touch devices start static (overlays not even downloaded); the first
+  // touch arms the full interactive layers.
+  const [touchReady, setTouchReady] = useState(false);
+  // Shared gaze target so the loop, pointer handlers, and touch handlers all
+  // read/write one vector without re-rendering.
+  const targetRef = useRef({ x: 0, y: 0 });
+  const motionMQRef = useRef<MediaQueryList | null>(null);
 
   // Keep capability live — only the media-query change handlers write state.
   useEffect(() => {
     const hoverMQ = window.matchMedia?.("(hover: hover) and (pointer: fine)");
     const motionMQ = window.matchMedia?.("(prefers-reduced-motion: reduce)");
     if (!hoverMQ || !motionMQ) return;
+    motionMQRef.current = motionMQ;
     const update = () => setCapable(hoverMQ.matches && !motionMQ.matches);
     hoverMQ.addEventListener("change", update);
     motionMQ.addEventListener("change", update);
@@ -203,9 +212,9 @@ export function InteractivePortrait({
   // Pointer tracking + blend loop. All hot state lives in refs/closures —
   // pointer events and frames never cause a React render.
   useEffect(() => {
-    if (base !== "views" || !capable) return;
+    if (base !== "views" || (!capable && !touchReady)) return;
 
-    const target = { x: 0, y: 0 };
+    const target = targetRef.current;
     const current = { x: 0, y: 0 };
     const last = new Array<number>(VIEWS.length).fill(-1);
     const weights = new Array<number>(VIEWS.length).fill(0);
@@ -283,7 +292,33 @@ export function InteractivePortrait({
       document.removeEventListener("mouseleave", reset);
       document.removeEventListener("mouseout", onMouseOut);
     };
-  }, [base, capable]);
+  }, [base, capable, touchReady]);
+
+  // Touch support (phones/tablets): the first touch arms the directional
+  // layers; the finger position then drives the gaze through the same
+  // pointermove path above, and lifting the finger eases back to centre.
+  // Never arms under prefers-reduced-motion.
+  useEffect(() => {
+    if (base !== "views") return;
+    const onDown = (e: PointerEvent) => {
+      if (e.pointerType !== "touch") return;
+      if (motionMQRef.current?.matches) return;
+      setTouchReady(true);
+    };
+    const onUp = (e: PointerEvent) => {
+      if (e.pointerType !== "touch") return;
+      targetRef.current.x = 0;
+      targetRef.current.y = 0;
+    };
+    window.addEventListener("pointerdown", onDown, { passive: true });
+    window.addEventListener("pointerup", onUp, { passive: true });
+    window.addEventListener("pointercancel", onUp, { passive: true });
+    return () => {
+      window.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+    };
+  }, [base]);
 
   if (base === "error") {
     return (
@@ -324,7 +359,7 @@ export function InteractivePortrait({
       ref={wrapRef}
       role="img"
       aria-label={label}
-      className={`pointer-events-none relative mx-auto aspect-[509/534] w-full select-none overflow-hidden ${className}`}
+      className={`pointer-events-none relative mx-auto aspect-[509/534] w-full touch-pan-y select-none overflow-hidden ${className}`}
     >
       {/* Centre view — same uniform frame as every layer. Its measured
           geometry is exactly full-bleed, which is what fixes the box aspect
@@ -344,9 +379,9 @@ export function InteractivePortrait({
       />
       {/* Directional overlays — each mapped from its own measured source
           geometry into the identical box, so crossfades read as one coherent
-          portrait. Mounted only when cursor tracking is active (touch devices
-          never download them). */}
-      {capable &&
+          portrait. Mounted for cursor tracking, or on touch devices from
+          the first touch on (untouched phones never download them). */}
+      {(capable || touchReady) &&
         VIEWS.slice(1).map((def, k) => {
           const i = k + 1;
           return (
