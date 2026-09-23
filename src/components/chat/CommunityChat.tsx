@@ -6,7 +6,6 @@ import {
   MessageCircle,
   RotateCw,
   Send,
-  Shield,
   ShieldCheck,
   Trash,
   Undo2,
@@ -70,6 +69,21 @@ export function CommunityChat({
   const [authError, setAuthError] = useState<string | null>(null);
   const isAdmin = !!ADMIN_UID && session?.user?.id === ADMIN_UID;
   const adminRef = useRef(false);
+  // Timestamps of recent title clicks — triple-click reveals admin sign-in.
+  const titleClicks = useRef<number[]>([]);
+
+  const handleTitleClick = () => {
+    if (!ADMIN_UID || session) return;
+    const now = Date.now();
+    titleClicks.current = [...titleClicks.current, now].filter(
+      (t) => now - t < 600
+    );
+    if (titleClicks.current.length >= 3) {
+      titleClicks.current = [];
+      setAuthError(null);
+      setAuthOpen(true);
+    }
+  };
 
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -385,7 +399,10 @@ export function CommunityChat({
               <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
                 <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />
               </span>
-              <div className="min-w-0 flex-1">
+              <div
+                className="min-w-0 flex-1 select-none"
+                onClick={handleTitleClick}
+              >
                 <h2 className="font-pixel text-[13px] leading-none text-neutral-900 dark:text-neutral-100">
                   community chat
                 </h2>
@@ -394,35 +411,20 @@ export function CommunityChat({
                   shared live with every visitor
                 </p>
               </div>
-              {ADMIN_UID ? (
-                session ? (
-                  <button
-                    type="button"
-                    onClick={signOut}
-                    aria-label={isAdmin ? "Sign out (admin)" : "Sign out"}
-                    title={isAdmin ? "Signed in as admin" : "Sign out"}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
-                  >
-                    {isAdmin ? (
-                      <ShieldCheck className="h-4 w-4" aria-hidden="true" />
-                    ) : (
-                      <LogOut className="h-4 w-4" aria-hidden="true" />
-                    )}
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAuthOpen((v) => !v);
-                      setAuthError(null);
-                    }}
-                    aria-label="Admin sign in"
-                    title="Admin sign in"
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
-                  >
-                    <Shield className="h-4 w-4" aria-hidden="true" />
-                  </button>
-                )
+              {session ? (
+                <button
+                  type="button"
+                  onClick={signOut}
+                  aria-label={isAdmin ? "Sign out (admin)" : "Sign out"}
+                  title={isAdmin ? "Signed in as admin" : "Sign out"}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
+                >
+                  {isAdmin ? (
+                    <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+                  ) : (
+                    <LogOut className="h-4 w-4" aria-hidden="true" />
+                  )}
+                </button>
               ) : null}
               <button
                 type="button"
