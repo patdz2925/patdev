@@ -111,9 +111,9 @@ export const organizations: OrganizationItem[] = [
   {
     id: "programming",
     name: "Computer Programming",
-    role: "President",
+    role: "Class President",
     period: "2024 – present",
-    description: "Lead programming work and mentor Grade 10 Computer Programming students.",
+    description: "Class president of the Grade 10 Computer Programming class.",
   },
   {
     id: "class-officer",
